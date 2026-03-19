@@ -288,22 +288,25 @@ export function PriceResultScreen({
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div className={`flex h-12 w-12 items-center justify-center rounded-full ${strategy.iconBg}`}>
                         <Icon className={`h-5 w-5 ${strategy.iconColor}`} />
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className={`screen-label ${strategy.titleColor}`}>{strategy.title}</p>
                         <p className="screen-caption mt-0.5 text-muted-foreground">{strategy.period}</p>
                         <p className="screen-body mt-2 text-muted-foreground">{strategy.description}</p>
                       </div>
                     </div>
-
-                    <div className="shrink-0 text-right">
-                      <div className="leading-none text-3xl font-extrabold text-foreground">
-                        {normalizePrice(strategy.price).toLocaleString()}
-                        <span className="ml-1 text-lg font-semibold">만원</span>
+                    <div className="min-w-0 shrink-0 text-right">
+                      <div className="flex items-end justify-end gap-1 leading-none text-foreground">
+                        <span className="text-[1.75rem] font-extrabold tracking-tight sm:text-3xl">
+                          {normalizePrice(strategy.price).toLocaleString()}
+                        </span>
+                        <span className="pb-0.5 text-sm font-semibold text-muted-foreground sm:text-base">
+                          만원
+                        </span>
                       </div>
                     </div>
                   </div>
