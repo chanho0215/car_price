@@ -285,7 +285,7 @@ export function VehicleInputScreen({ onNext, onBack, initialData, initialStep }:
                 selected={formData.year === year}
                 onClick={() => selectOption("year", year)}
               >
-                {year}��
+                {year}년
               </SelectButton>
             ))}
           </div>
