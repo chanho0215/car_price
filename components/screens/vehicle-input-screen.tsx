@@ -198,9 +198,9 @@ export function VehicleInputScreen({ onNext, onBack, initialData, initialStep }:
 
     setFormData((prev: typeof defaultFormData) => ({
       ...prev,
-      year: availableYears.includes(prev.year) ? prev.year : availableYears[0],
+      year: availableYears.includes(prev.year) ? prev.year : "",
       vehicleClass: meta.vehicleClass,
-      seats: availableSeats.includes(prev.seats) ? prev.seats : availableSeats[0],
+      seats: availableSeats.includes(prev.seats) ? prev.seats : "",
       displacement: availableDisplacements.some((d) => d.value === prev.displacement)
         ? prev.displacement
         : availableDisplacements[0]?.value || "",
