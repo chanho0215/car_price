@@ -10,6 +10,16 @@ function getBackendBaseUrl() {
   )
 }
 
+function buildPredictUrl(rawBaseUrl: string) {
+  const normalizedBaseUrl = rawBaseUrl.replace(/\/+$/, "")
+
+  if (normalizedBaseUrl.endsWith("/predict")) {
+    return normalizedBaseUrl
+  }
+
+  return `${normalizedBaseUrl}/predict`
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.text()
@@ -27,7 +37,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const backendUrl = `${backendBaseUrl}/predict`
+    const backendUrl = buildPredictUrl(backendBaseUrl)
 
     const response = await fetch(backendUrl, {
       method: "POST",
@@ -40,23 +50,44 @@ export async function POST(request: Request) {
 
     const responseText = await response.text()
     const contentType = response.headers.get("content-type") || ""
+    const trimmedResponseText = responseText.trim()
+
+    if (trimmedResponseText) {
+      try {
+        const parsed = JSON.parse(trimmedResponseText)
+        return NextResponse.json(parsed, { status: response.status })
+      } catch {
+        // Continue to the typed error response below when upstream did not send valid JSON.
+      }
+    }
 
     if (!contentType.includes("application/json")) {
+      const responsePreview = trimmedResponseText.slice(0, 180)
       return NextResponse.json(
         {
-          detail: `가격 예측 서버가 JSON이 아닌 응답을 반환했습니다. (${response.status})`,
+          detail:
+            response.status === 404
+              ? "가격 예측 백엔드 주소가 올바르지 않습니다. BACKEND_API_URL이 백엔드 루트 또는 /predict 엔드포인트를 정확히 가리키는지 확인해 주세요."
+              : `가격 예측 서버가 JSON이 아닌 응답을 반환했습니다. (${response.status})`,
           upstreamStatus: response.status,
+          upstreamContentType: contentType || "unknown",
+          upstreamUrl: backendUrl,
+          upstreamPreview: responsePreview || undefined,
         },
         { status: 502 },
       )
     }
 
-    return new NextResponse(responseText, {
-      status: response.status,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
+    return NextResponse.json(
+      {
+        detail: `가격 예측 서버 JSON 파싱에 실패했습니다. (${response.status})`,
+        upstreamStatus: response.status,
+        upstreamContentType: contentType || "unknown",
+        upstreamUrl: backendUrl,
+        upstreamPreview: trimmedResponseText.slice(0, 180) || undefined,
       },
-    })
+      { status: 502 },
+    )
   } catch (error) {
     const detail =
       error instanceof Error
