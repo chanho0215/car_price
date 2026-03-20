@@ -1,9 +1,9 @@
 "use client"
 
 import {
-  ArrowLeft,
   Calendar,
   CarFront,
+  ChevronLeft,
   CircleDollarSign,
   Fuel,
   Gauge,
@@ -225,7 +225,7 @@ export function PriceResultScreen({
              onClick={onBack}
              className="-ml-2 p-2 text-foreground transition-colors"
               >
-             <ArrowLeft className="h-6 w-6" />
+             <ChevronLeft className="h-6 w-6" />
            </button>
            <h1 className="flex-1 text-center text-[22px] font-bold leading-[1.4] tracking-[-0.01em] text-foreground">추천 판매가격</h1>
            <div className="w-10" />
