@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import os
 import pickle
+import re
 from functools import lru_cache
 from typing import List, Optional
 
@@ -207,6 +208,23 @@ def adjust_to_c2c_prices(q05: float, q50: float, q95: float):
     }
 
 
+def parse_openai_json(text: str) -> dict:
+    cleaned = text.strip()
+
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+        cleaned = cleaned.strip()
+
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+        raise
+
+
 def generate_price_explanation(
     form_data: dict, fast_price: float, fair_price: float, high_price: float
 ) -> dict:
@@ -237,7 +255,7 @@ def generate_price_explanation(
     option_count = len(form_data.get("options", []))
 
     prompt = f"""
-다음 중고차 가격 예측 결과를 바탕으로 JSON만 출력해 주세요.
+다음 중고차 가격 예측 결과를 바탕으로 JSON 객체만 출력해 주세요. 마크다운 코드블록(```)은 절대 사용하지 마세요.
 
 출력 형식:
 {{
@@ -279,8 +297,10 @@ def generate_price_explanation(
                     "role": "system",
                     "content": (
                         "당신은 중고차 판매가 설명을 작성하는 도우미입니다. "
-                        "반드시 JSON만 출력하세요. 제공된 차량 정보만 사용하고, "
-                        "입력에 없는 사실은 추측하지 마세요. 특히 사고 여부는 입력값을 그대로 반영하세요."
+                        "반드시 유효한 JSON 객체만 출력하세요. "
+                        "마크다운 코드블록, 설명 문장, 머리말, 꼬리말을 절대 추가하지 마세요. "
+                        "제공된 차량 정보만 사용하고, 입력에 없는 사실은 추측하지 마세요. "
+                        "특히 사고 여부는 입력값을 그대로 반영하세요."
                     ),
                 },
                 {
@@ -291,7 +311,7 @@ def generate_price_explanation(
             max_output_tokens=300,
         )
 
-        result = json.loads(response.output_text.strip())
+        result = parse_openai_json(response.output_text)
         return {
             "summary": result.get("summary", default_result["summary"]),
             "detail": result.get("detail", default_result["detail"]),
