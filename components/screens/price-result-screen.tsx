@@ -231,7 +231,6 @@ export function PriceResultScreen({
            <div className="w-10" />
         </div>
       </header>
-    </div>
 
       <div className="space-y-5 px-6 py-5">
         <section className="rounded-3xl border border-border bg-card p-5">
