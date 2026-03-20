@@ -50,7 +50,7 @@ function formatMileage(value: string) {
 
 function formatAccidentLabel(value: string) {
   if (!value) return "-"
-  return value === "사고 이력 있음" ? "사고 이력 있음" : "무사고"
+  return String(value).trim() === "사고 이력 있음" ? "사고 이력 있음" : "무사고"
 }
 
 export function SummaryScreen({
@@ -60,7 +60,7 @@ export function SummaryScreen({
   vehicleData,
   isLoading = false,
 }: SummaryScreenProps) {
-  const hasAccident = String(vehicleData.accident || "") === "사고 이력 있음"
+  const hasAccident = String(vehicleData.accident || "").trim() === "사고 이력 있음"
   const selectedOptions = Array.isArray(vehicleData.options) ? vehicleData.options : []
 
   const InfoRow = ({

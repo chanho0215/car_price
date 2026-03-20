@@ -60,7 +60,7 @@ function getVehicleAge(year: string) {
 }
 
 function hasAccidentHistory(vehicleData: any) {
-  return String(vehicleData.accident || "") === "사고 이력 있음"
+  return String(vehicleData.accident || "").trim() === "사고 이력 있음"
 }
 
 function getAccidentText(vehicleData: any) {

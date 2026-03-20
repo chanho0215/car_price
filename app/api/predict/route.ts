@@ -13,7 +13,21 @@ function getBackendBaseUrl() {
 export async function POST(request: Request) {
   try {
     const body = await request.text()
-    const backendUrl = `${getBackendBaseUrl()}/predict`
+    const backendBaseUrl = getBackendBaseUrl()
+    const isLocalBackend = backendBaseUrl === DEFAULT_BACKEND_URL
+    const isProduction = process.env.NODE_ENV === "production"
+
+    if (isProduction && isLocalBackend) {
+      return NextResponse.json(
+        {
+          detail:
+            "배포 환경의 가격 예측 백엔드가 연결되지 않았습니다. BACKEND_API_URL 환경 변수를 설정해 주세요.",
+        },
+        { status: 503 },
+      )
+    }
+
+    const backendUrl = `${backendBaseUrl}/predict`
 
     const response = await fetch(backendUrl, {
       method: "POST",
@@ -25,6 +39,17 @@ export async function POST(request: Request) {
     })
 
     const responseText = await response.text()
+    const contentType = response.headers.get("content-type") || ""
+
+    if (!contentType.includes("application/json")) {
+      return NextResponse.json(
+        {
+          detail: `가격 예측 서버가 JSON이 아닌 응답을 반환했습니다. (${response.status})`,
+          upstreamStatus: response.status,
+        },
+        { status: 502 },
+      )
+    }
 
     return new NextResponse(responseText, {
       status: response.status,

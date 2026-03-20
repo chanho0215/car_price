@@ -94,7 +94,7 @@ function createMockPrediction(vehicleData: VehicleFormData): PredictionData {
   const age = vehicleData.year ? currentYear - Number(vehicleData.year) : 5
   const mileage = Number(String(vehicleData.mileage).replace(/,/g, "")) || 50000
   const optionCount = Array.isArray(vehicleData.options) ? vehicleData.options.length : 0
-  const hasAccident = vehicleData.accident === "사고 이력 있음"
+  const hasAccident = String(vehicleData.accident || "").trim() === "사고 이력 있음"
 
   const basePrice = Math.max(500, 3200 - age * 180 - (mileage / 10000) * 45)
   const accidentFactor = hasAccident ? 0.86 : 1
@@ -152,13 +152,22 @@ export default function Home() {
           body: JSON.stringify(vehicleData),
         })
 
-        const result = await res.json()
+        const rawText = await res.text()
+        let result: PredictionData | { detail?: string } = {}
 
-        if (!res.ok) {
-          throw new Error(result.detail || "가격 예측 요청에 실패했습니다.")
+        try {
+          result = rawText ? JSON.parse(rawText) : {}
+        } catch {
+          throw new Error("가격 예측 서버 응답 형식이 올바르지 않습니다. 배포 상태를 확인해 주세요.")
         }
 
-        setPrediction(result)
+        if (!res.ok) {
+          const errorDetail =
+            "detail" in result ? result.detail : undefined
+          throw new Error(errorDetail || "가격 예측 요청에 실패했습니다.")
+        }
+
+        setPrediction(result as PredictionData)
       } catch (apiError) {
         console.error("Predict API error:", apiError)
 
