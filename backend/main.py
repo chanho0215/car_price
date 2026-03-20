@@ -290,9 +290,10 @@ def generate_price_explanation(
 """
 
     try:
-        response = openai_client.responses.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4.1-mini",
-            input=[
+            response_format={"type": "json_object"},
+            messages=[
                 {
                     "role": "system",
                     "content": (
@@ -308,10 +309,12 @@ def generate_price_explanation(
                     "content": prompt,
                 },
             ],
-            max_output_tokens=300,
+            max_tokens=300,
+            temperature=0.3,
         )
 
-        result = parse_openai_json(response.output_text)
+        raw_content = response.choices[0].message.content or "{}"
+        result = parse_openai_json(raw_content)
         return {
             "summary": result.get("summary", default_result["summary"]),
             "detail": result.get("detail", default_result["detail"]),
@@ -326,7 +329,7 @@ def generate_price_explanation(
         result = default_result.copy()
         result["debug"] = {
             "openai_enabled": bool(openai_client),
-            "reason": str(exc)[:300],
+            "reason": f"{type(exc).__name__}: {str(exc)[:260]}",
         }
         return result
 
