@@ -10,9 +10,8 @@ const notoSansKR = Noto_Sans_KR({
 })
 
 export const metadata: Metadata = {
-  title: "내 차 팔기 | 당근",
-  description: "내 차 시세를 확인하고 판매 전략을 비교해 보세요.",
-  generator: "v0.app",
+  title: "중고차 가격 조회",
+  description: "차량 정보를 입력하면 AI가 판매가 범위를 안내합니다.",
   icons: {
     icon: [
       {
