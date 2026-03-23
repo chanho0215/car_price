@@ -207,7 +207,8 @@ def adjust_to_c2c_prices(q05: float, q50: float, q95: float):
     fast_formula = q50 - (fixed_cost + dealer_component) - fast_discount
     high_formula = q50 - trust_discount
 
-    fast_price = min(q05, fast_formula)
+    # Keep q05 as the floor for a quick sale so the fast price does not dip below the lower quantile.
+    fast_price = max(q05, fast_formula)
     high_price = min(q95, high_formula)
 
     fast_price = max(fast_price, 0)
